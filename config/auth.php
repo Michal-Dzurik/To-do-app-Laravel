@@ -108,4 +108,27 @@ return [
 
     'password_timeout' => 10800,
 
+    /* AUTH Requests config */
+    'needed_params' => ['name','email','password'],
+    'messages' => [
+        'name.required' => 'Name is required',
+        'email.required' => 'Email is required',
+        'password.required' => 'Password is required',
+        'email.unique' => 'User with this email is already signed in',
+        'email.email' => 'Email you provided is not valid'
+    ],
+
+    // Login
+    'login_rules' => [
+        'name' => 'required',
+        'email' => 'required|email',
+        'password' => 'required'
+    ],
+
+    // Regsier
+    'register_rules' => [
+        'name' => 'required',
+        'email' => 'required|unique:users|email',
+        'password' => 'required'
+    ],
 ];
