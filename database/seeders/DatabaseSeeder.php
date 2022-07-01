@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Task;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -17,6 +18,10 @@ class DatabaseSeeder extends Seeder
     public function run()
     {
         $seed = new UserSeeder();
+
+        $seed->run();
+
+        $seed = new TaskSeeder();
 
         $seed->run();
     }

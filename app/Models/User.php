@@ -36,10 +36,15 @@ use Laravel\Sanctum\HasApiTokens;
  * @method static \Illuminate\Database\Eloquent\Builder|User whereRememberToken($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereUpdatedAt($value)
  * @mixin \Eloquent
+ * @property-read \Illuminate\Database\Eloquent\Collection|\App\Models\Task[] $tasks
+ * @property-read int|null $tasks_count
+ * @property-read mixed $owner
  */
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable;
+
+    protected $appends = ['owner'];
 
     /**
      * The attributes that are mass assignable.
@@ -60,6 +65,7 @@ class User extends Authenticatable
     protected $hidden = [
         'password',
         'remember_token',
+        'email_verified_at'
     ];
 
     /**
@@ -70,4 +76,18 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function getOwnerAttribute()
+    {
+        if ($this->pivot){
+            $this->makeHidden('pivot');
+            return $this->pivot->shared == 0;
+        }
+
+        return null;
+    }
+
+    public function tasks(){
+      return $this->belongsToMany(Task::class,'task_user')->withPivot('shared');
+    }
 }
