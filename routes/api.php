@@ -1,6 +1,5 @@
 <?php
 
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -26,20 +25,19 @@ Route::get('user/{id}',[\App\Http\Controllers\UserController::class,'show'])->na
 Route::get('tasks',[\App\Http\Controllers\TaskController::class, 'index'])->name('tasks.index');
 
 
-
 Route::middleware('auth:sanctum')->group( function () {
     // Users
-    Route::get('user/{id}/tasks',[\App\Http\Controllers\UserController::class,'showTasks']);
+    Route::get('user/{id}/tasks',[\App\Http\Controllers\UserController::class,'showTasks'])->name('task.users');
 
     // Tasks
-    Route::put('task/{id}/done',[\App\Http\Controllers\TaskController::class,'done'])->name('task.done');
-    Route::put('task/{id}/undone',[\App\Http\Controllers\TaskController::class,'undone'])->name('task.undone');
+    Route::patch('task/{id}/done',[\App\Http\Controllers\TaskController::class,'done'])->name('task.done');
+    Route::patch('task/{id}/undone',[\App\Http\Controllers\TaskController::class,'undone'])->name('task.undone');
 
-    Route::put('task/{id}/undestroy',[\App\Http\Controllers\TaskController::class,'undestroy'])->name('task.done');
+    Route::patch('task/{id}/undestroy',[\App\Http\Controllers\TaskController::class,'undestroy'])->name('task.done');
 
-    Route::put('task/{id}/share/{user_id}',[\App\Http\Controllers\TaskController::class,'share'])->name('task.share');
-    Route::put('task/{id}/unshare/{user_id}',[\App\Http\Controllers\TaskController::class,'unshare'])->name('task.unshare');
+    Route::patch('task/{id}/share/{user_id}',[\App\Http\Controllers\TaskController::class,'share'])->name('task.share');
+    Route::patch('task/{id}/unshare/{user_id}',[\App\Http\Controllers\TaskController::class,'unshare'])->name('task.unshare');
 
     Route::apiResource('task',\App\Http\Controllers\TaskController::class)->except(['index']);
-    Route::get('task/{id}/users',[\App\Http\Controllers\TaskController::class,'showUsers']);
+    Route::get('task/{id}/users',[\App\Http\Controllers\TaskController::class,'showUsers'])->name('user.tasks');
 });

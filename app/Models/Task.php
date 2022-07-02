@@ -96,27 +96,68 @@ class Task extends Model
     ];
 
     //Events
+    /**
+     * Triggers done event.
+     *
+     * @param  User  $user
+     * @return void
+     */
     public function makeDone($user){
         $this->fireModelEvent('done',true,[$user]);
     }
 
+    /**
+     * Triggers undone event.
+     *
+     * @param  User  $user
+     * @return void
+     */
     public function makeUndone($user){
         $this->fireModelEvent('undone',true,[$user]);
     }
 
+    /**
+     * Triggers share event.
+     *
+     * @param  User  $user
+     * @param  User  $action_user
+     * @return void
+     */
     public function makeShared($user,$action_user){
         $this->fireModelEvent('shared',true,[$user,$action_user]);
     }
 
+    /**
+     * Triggers unshare event.
+     *
+     * @param  User  $user
+     * @param  User  $action_user
+     * @return void
+     */
     public function makeUnshared($user,$action_user){
         $this->fireModelEvent('unshared',true,[$user,$action_user]);
     }
 
+    /**
+     * Triggers events but add data for it to model.
+     *
+     * @param  string  $event
+     * @param  boolean  $halt
+     * @param  array  $data
+     * @return void
+     */
     protected function fireModelEvent($event, $halt = true, array $data = []) {
         $this->eventData[$event] = $data;
         return parent::fireModelEvent($event, $halt);
     }
 
+    /**
+     * Returns data for a certain event.
+     *
+     * @param  string  $event
+     *
+     * @return array|null
+     */
     public function getEventData(string $event) {
         if (array_key_exists($event, $this->eventData)) {
             return $this->eventData[$event];
@@ -126,6 +167,11 @@ class Task extends Model
     }
 
     // Modifiers
+    /**
+     * Modifier for share attribute.
+     *
+     * @return boolean|null
+     */
     public function getSharedAttribute()
     {
         if ($this->pivot){
@@ -142,11 +188,20 @@ class Task extends Model
     }
 
     // Scopes
+    /**
+     * Adds where to query.
+     *
+     * @return boolean|null
+     */
     public static function scopeUndeleted($query){
         return $query->where(['deleted' => 0]);
     }
 
-
+    /**
+     * Adds where to query.
+     *
+     * @return boolean|null
+     */
     public function scopeTitle($query, $title)
     {
         if (!is_null($title)) {
@@ -156,6 +211,11 @@ class Task extends Model
         return $query;
     }
 
+    /**
+     * Adds where to query.
+     *
+     * @return boolean|null
+     */
     public function scopeDescription($query, $description)
     {
         if (!is_null($description)) {
@@ -165,6 +225,11 @@ class Task extends Model
         return $query;
     }
 
+    /**
+     * Adds where to query.
+     *
+     * @return boolean|null
+     */
     public function scopeDone($query, $done)
     {
         if (!is_null($done)) {

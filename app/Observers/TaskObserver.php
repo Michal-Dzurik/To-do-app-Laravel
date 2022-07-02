@@ -2,13 +2,8 @@
 
 namespace App\Observers;
 
-use App\Mail\ShareMail;
 use App\Models\Task;
-use App\Models\User;
 use Illuminate\Mail\Message;
-use Illuminate\Notifications\Messages\MailMessage;
-use Illuminate\Support\Facades\Mail;
-use Symfony\Component\Mime\Part\AbstractPart;
 
 class TaskObserver
 {

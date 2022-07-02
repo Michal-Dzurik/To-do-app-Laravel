@@ -9,7 +9,6 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
-use stdClass;
 use Symfony\Component\HttpFoundation\Response;
 
 class TaskController extends Controller
@@ -70,7 +69,7 @@ class TaskController extends Controller
      */
     public function show($id)
     {
-        $task = Task::undeleted()->where(['id' => $id])->first();
+        $task = Task::undeleted()->findOrFail($id);
 
         return response([
             'status' => 'success',
@@ -89,7 +88,7 @@ class TaskController extends Controller
     {
         $paramsNeeded = Config::get('tasks.needed_params');
 
-        $task = Task::findOrFail($id)->undeleted()->first();
+        $task = Task::undeleted()->findOrFail($id);
 
         if ($task == null) {
             return response([
@@ -295,15 +294,33 @@ class TaskController extends Controller
         return response(['status' => 'success', 'data' => Task::find($id)->users()->get() ]);
     }
 
+    /**
+     * Returns column to order by.
+     *
+     * @param string $item
+     * @return string
+     */
     private function getOrderBy($item){
        return in_array($item, Config::get('tasks.order')) ? $item : 'id';
     }
 
+    /**
+     * Returns direction of ordering.
+     *
+     * @param string $item
+     * @return string
+     */
     private function getOrderDirection($item){
         return in_array($item, Config::get('tasks.directions')) ? $item : 'ASC';
     }
 
-    private function getPerPage(mixed $item)
+    /**
+     * Returns perpage number.
+     *
+     * @param int $item
+     * @return int
+     */
+    private function getPerPage($item)
     {
         return $item ?: Config::get('app.perpage');
     }

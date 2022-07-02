@@ -45,6 +45,9 @@ class LoginRequest extends FormRequest{
 
     }
 
+    /**
+     * @return array|mixed
+     */
     public function messages()
     {
         return Config::get('auth.messages');

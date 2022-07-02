@@ -77,6 +77,11 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
+    /**
+     *  returns owner attribute
+     *
+     * @return bool|null
+     */
     public function getOwnerAttribute()
     {
         if ($this->pivot){

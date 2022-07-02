@@ -3,10 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Task;
-use App\Models\User;
 use Illuminate\Database\Seeder;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 
 class TaskSeeder extends Seeder
 {
