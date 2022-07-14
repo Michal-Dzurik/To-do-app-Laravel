@@ -20,7 +20,7 @@ return new class extends Migration
             $table->longText('description')->default(null);
             $table->string('category')->default(null);
             $table->boolean('done')->default(false);
-            $table->boolean('deleted')->default(false);
+            $table->softDeletes();
         });
     }
 

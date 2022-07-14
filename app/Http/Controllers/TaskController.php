@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Gate;
 use Symfony\Component\HttpFoundation\Response;
+use App\Helpers\Helpers;
 
 class TaskController extends Controller
 {
@@ -21,12 +22,12 @@ class TaskController extends Controller
     public function index(Request $request)
     {
 
-        $task = Task::undeleted()
+        $task = Task::withoutTrashed()
             ->title($request->title)
             ->description($request->description)
             ->done($request->done)
-            ->orderBy($this->getOrderBy($request->orderby),$this->getOrderDirection($request->direction))
-            ->paginate($this->getPerPage($request->pepage));
+            ->orderBy(Helpers::getOrderBy($request->orderby),Helpers::getOrderDirection($request->direction))
+            ->paginate(Helpers::getPerPage($request->pepage));
 
         return response([
             'status' => 'success',
@@ -69,7 +70,7 @@ class TaskController extends Controller
      */
     public function show($id)
     {
-        $task = Task::undeleted()->findOrFail($id);
+        $task = Task::withoutTrashed()->findOrFail($id);
 
         return response([
             'status' => 'success',
@@ -88,7 +89,7 @@ class TaskController extends Controller
     {
         $paramsNeeded = Config::get('tasks.needed_params');
 
-        $task = Task::undeleted()->findOrFail($id);
+        $task = Task::withoutTrashed()->findOrFail($id);
 
         if ($task == null) {
             return response([
@@ -97,7 +98,9 @@ class TaskController extends Controller
             ],Response::HTTP_NOT_FOUND);
         }
 
-        if (Gate::allows('modify-task',$task->id)){
+        $gate = Gate::inspect('update',$task);
+
+        if ($gate->allowed()){
             if ($request->safe()->only($paramsNeeded)){
 
                 $task->update($request->only($paramsNeeded));
@@ -112,7 +115,7 @@ class TaskController extends Controller
 
         return response([
             'status' => 'error',
-            'message' => 'Task is not yours'
+            'message' => 'Task is not yours, and it\'s not even shared with you'
         ],Response::HTTP_UNAUTHORIZED);
     }
 
@@ -123,11 +126,11 @@ class TaskController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function destroy($id){
-        $task = Task::findOrFail($id);
+        $task = Task::withoutTrashed()->findOrFail($id);
+        $gate = Gate::inspect('delete',$task);
 
-
-        if (Gate::allows('modify-task',$task->id)){
-            $task->update(["deleted" => 1]);
+        if ($gate->allowed()){
+            $task->delete();
             return response([
                 'status' => 'success',
             ]);
@@ -136,7 +139,7 @@ class TaskController extends Controller
 
         return response([
             'status' => 'error',
-            'message' => 'Task is not yours'
+            'message' => 'Task is not yours.'
         ],Response::HTTP_UNAUTHORIZED);
     }
 
@@ -148,10 +151,11 @@ class TaskController extends Controller
      */
     public function undestroy($id)
     {
-        $task = Task::findOrFail($id);
+        $task = Task::onlyTrashed()->findOrFail($id);
+        $gate = Gate::inspect('delete',$task);
 
-        if (Gate::allows('modify-task',$task->id)){
-            $task->update(["deleted" => 0]);
+        if ($gate->allowed()){
+            $task->restore();
 
             return response([
                 'status' => 'success',
@@ -159,7 +163,7 @@ class TaskController extends Controller
         }
         return response([
             'status' => 'error',
-            'message' => 'Task is not yours'
+            'message' => 'Task is not yours.'
         ],Response::HTTP_UNAUTHORIZED);
 
     }
@@ -172,8 +176,10 @@ class TaskController extends Controller
      */
     public function done($id)
     {
-        $task = Task::undeleted()->findOrFail($id);
-        if (Gate::allows('modify-task',$task->id)){
+        $task = Task::withoutTrashed()->findOrFail($id);
+        $gate = Gate::inspect('update',$task);
+
+        if ($gate->allowed()){
             $task->update(["done" => 1]);
 
             $task->makeDone(\Auth::user());
@@ -185,7 +191,7 @@ class TaskController extends Controller
 
         return response([
             'status' => 'error',
-            'message' => 'Task is not yours'
+            'message' => 'Task is not yours, and it\'s not even shared with you'
         ],Response::HTTP_UNAUTHORIZED);
 
     }
@@ -198,8 +204,10 @@ class TaskController extends Controller
      */
     public function undone($id)
     {
-        $task = Task::undeleted()->findOrFail($id);
-        if (Gate::allows('modify-task',$task->id)){
+        $task = Task::withoutTrashed()->findOrFail($id);
+        $gate = Gate::inspect('update',$task);
+
+        if ($gate->allowed()){
             $task->update(["done" => 0]);
 
             $task->makeUndone(\Auth::user());
@@ -211,7 +219,7 @@ class TaskController extends Controller
 
         return response([
             'status' => 'error',
-            'message' => 'Task is not yours'
+            'message' => 'Task is not yours, and it\'s not even shared with you'
         ],Response::HTTP_UNAUTHORIZED);
 
     }
@@ -224,10 +232,10 @@ class TaskController extends Controller
      */
     public function share($id,$user_id)
     {
+        $task = Task::withoutTrashed()->findOrFail($id);
+        $gate = Gate::inspect('update',$task);
 
-        $task = Task::undeleted()->findOrFail($id);
-        if (Gate::allows('modify-task',$task->id)){
-
+        if ($gate->allowed()){
             try {
                 $user = User::findOrFail($user_id);
                 $task->users()->attach($user->id,['shared' => true]);
@@ -249,7 +257,7 @@ class TaskController extends Controller
 
         return response([
             'status' => 'error',
-            'message' => 'Task is not yours'
+            'message' => 'Task is not yours, and it\'s not even shared with you'
         ],Response::HTTP_UNAUTHORIZED);
 
     }
@@ -263,8 +271,10 @@ class TaskController extends Controller
     public function unshare($id,$user_id)
     {
 
-        $task = Task::undeleted()->findOrFail($id);
-        if (Gate::allows('modify-task',$task->id)){
+        $task = Task::withoutTrashed()->findOrFail($id);
+
+        $gate = Gate::inspect('update',$task);
+        if ($gate->allowed()){
 
             $user = User::findOrFail($user_id);
             $task->users()->detach($user->id);
@@ -279,7 +289,7 @@ class TaskController extends Controller
 
         return response([
             'status' => 'error',
-            'message' => 'Task is not yours'
+            'message' => 'Task is not yours, and it\'s not even shared with you'
         ],Response::HTTP_UNAUTHORIZED);
 
     }
@@ -294,35 +304,6 @@ class TaskController extends Controller
         return response(['status' => 'success', 'data' => Task::find($id)->users()->get() ]);
     }
 
-    /**
-     * Returns column to order by.
-     *
-     * @param string $item
-     * @return string
-     */
-    private function getOrderBy($item){
-       return in_array($item, Config::get('tasks.order')) ? $item : 'id';
-    }
 
-    /**
-     * Returns direction of ordering.
-     *
-     * @param string $item
-     * @return string
-     */
-    private function getOrderDirection($item){
-        return in_array($item, Config::get('tasks.directions')) ? $item : 'ASC';
-    }
-
-    /**
-     * Returns perpage number.
-     *
-     * @param int $item
-     * @return int
-     */
-    private function getPerPage($item)
-    {
-        return $item ?: Config::get('app.perpage');
-    }
 
 }

@@ -30,14 +30,17 @@ Route::middleware('auth:sanctum')->group( function () {
     Route::get('user/{id}/tasks',[\App\Http\Controllers\UserController::class,'showTasks'])->name('task.users');
 
     // Tasks
-    Route::patch('task/{id}/done',[\App\Http\Controllers\TaskController::class,'done'])->name('task.done');
-    Route::patch('task/{id}/undone',[\App\Http\Controllers\TaskController::class,'undone'])->name('task.undone');
+    Route::group(['prefix' => "task"],function (){
+        Route::patch('{id}/done',[\App\Http\Controllers\TaskController::class,'done'])->name('task.done');
+        Route::patch('{id}/undone',[\App\Http\Controllers\TaskController::class,'undone'])->name('task.undone');
 
-    Route::patch('task/{id}/undestroy',[\App\Http\Controllers\TaskController::class,'undestroy'])->name('task.done');
+        Route::patch('{id}/undestroy',[\App\Http\Controllers\TaskController::class,'undestroy'])->name('task.done');
 
-    Route::patch('task/{id}/share/{user_id}',[\App\Http\Controllers\TaskController::class,'share'])->name('task.share');
-    Route::patch('task/{id}/unshare/{user_id}',[\App\Http\Controllers\TaskController::class,'unshare'])->name('task.unshare');
+        Route::patch('{id}/share/{user_id}',[\App\Http\Controllers\TaskController::class,'share'])->name('task.share');
+        Route::patch('{id}/unshare/{user_id}',[\App\Http\Controllers\TaskController::class,'unshare'])->name('task.unshare');
+
+        Route::get('{id}/users',[\App\Http\Controllers\TaskController::class,'showUsers'])->name('user.tasks');
+    });
 
     Route::apiResource('task',\App\Http\Controllers\TaskController::class)->except(['index']);
-    Route::get('task/{id}/users',[\App\Http\Controllers\TaskController::class,'showUsers'])->name('user.tasks');
 });

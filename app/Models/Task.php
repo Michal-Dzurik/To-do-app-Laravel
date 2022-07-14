@@ -3,10 +3,9 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use stdClass;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
  * App\Models\Task
@@ -38,10 +37,13 @@ use stdClass;
  * @method static Builder|Task title($title)
  * @method static Builder|Task undeleted()
  * @method static Builder|Task whereCategory($value)
+ * @method static \Illuminate\Database\Query\Builder|Task onlyTrashed()
+ * @method static \Illuminate\Database\Query\Builder|Task withTrashed()
+ * @method static \Illuminate\Database\Query\Builder|Task withoutTrashed()
  */
 class Task extends Model
 {
-    use HasFactory;
+    use HasFactory,SoftDeletes;
 
     /**
      *  Attributes I can create
@@ -55,7 +57,7 @@ class Task extends Model
      *
      * @var array<string>
      */
-    protected $allowedFilterFields = ['title','description','shared','category','done','undeleted','created_at','updated_at'];
+    protected $allowedFilterFields = ['title','description','shared','category','done','created_at','updated_at'];
 
     /**
      * All events Task can be observed on
@@ -80,7 +82,6 @@ class Task extends Model
         'title',
         'description',
         'done',
-        'deleted',
         'category',
     ];
 
@@ -92,7 +93,6 @@ class Task extends Model
     protected $hidden = [
         'password',
         'remember_token',
-        'deleted'
     ];
 
     //Events
@@ -188,14 +188,6 @@ class Task extends Model
     }
 
     // Scopes
-    /**
-     * Adds where to query.
-     *
-     * @return boolean|null
-     */
-    public static function scopeUndeleted($query){
-        return $query->where(['deleted' => 0]);
-    }
 
     /**
      * Adds where to query.
