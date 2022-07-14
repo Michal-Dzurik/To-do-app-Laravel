@@ -27,13 +27,6 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies();
 
-        Gate::define('modify-task',function (User $user,$task_id){
-            $count = DB::table('task_user')
-                ->where("user_id", $user->id)
-                ->where("task_id", $task_id)->get()->count();
-
-            return $count == 1;
-        });
         //
     }
 }
